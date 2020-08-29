@@ -5,7 +5,7 @@ const { logToFile, logNextMillion, readLog, defaultFile } = require('./utils/log
 const scaper = require('./utils/request');
 const date = require('./utils/date');
 
-require('dotenv').config();
+require('dotenv').config({ path: '/var/www/html/covid-notifier-tgbot/.env' });
 
 const token = process.env.BOT_TOKEN;
 const channel_id = process.env.CHANNEL_ID;
