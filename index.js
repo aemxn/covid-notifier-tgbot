@@ -10,6 +10,7 @@ if (process.platform === "win32")
 else
     require('dotenv').config({ path: '/var/www/html/covid-notifier-tgbot/.env' });
 
+let logPath = '/var/www/html/covid-notifier-tgbot/million.log';
 const token = process.env.BOT_TOKEN;
 const channel_id = process.env.CHANNEL_ID;
 const bot = new TelegramBot(token, { polling: false });
@@ -41,14 +42,14 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
     let messageFooter = '<i>For previous log, go <a href="https://rentry.co/niakorona">here</a> (1M - 20M). #NarrativeMatters</i>';
 
     // check if cases passed million from yesterday
-    lineReader.eachLine('million.log', function(line, lastLine) {
+    lineReader.eachLine(logPath, function(line, lastLine) {
         if (lastLine) {
             let millionLog = readLog(line);
             let nextMillion = parseInt(millionLog['data']);
 
             // 1. Send daily alert (every 8 hours cron)
             bot.sendMessage(channel_id, messageTitle2 + messageCases + messageDate, tg_option);
-            
+
             if (todayCases >= nextMillion) {
                 let firstDigitStr = nextMillion.toString()[0];
                 let secondDigitStr = nextMillion.toString()[1];
@@ -56,13 +57,15 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
                 // 2. logging next million
                 let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
                 let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
-                
-                logToFile(logNextMillion, 'million.log');
+
+                logToFile(logNextMillion, logPath);
 
                 let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
                 // 3. Send 1 million alert
                 bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
             }
         }
+    }, function (err) {
+       if (err) throw err;
     });
 });
