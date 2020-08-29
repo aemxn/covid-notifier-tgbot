@@ -5,7 +5,10 @@ const { logToFile, logNextMillion, readLog, defaultFile } = require('./utils/log
 const scaper = require('./utils/request');
 const date = require('./utils/date');
 
-require('dotenv').config({ path: '/var/www/html/covid-notifier-tgbot/.env' });
+if (process.platform === "win32")
+    require('dotenv').config();
+else
+    require('dotenv').config({ path: '/var/www/html/covid-notifier-tgbot/.env' });
 
 const token = process.env.BOT_TOKEN;
 const channel_id = process.env.CHANNEL_ID;
@@ -25,8 +28,6 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
     let parsed_deaths = parseInt(scrape[1].replace(/,/g, ''));
     let parsed_recovered = parseInt(scrape[2].replace(/,/g, ''));
 
-    let covid_stats = { cases: todayCases, deaths: parsed_deaths, recovered: parsed_recovered };
-
     let timeNow = date.getNow();
     let messageTitle = '<b>Another 1M achieved!</b>\n' + '<i>' + timeNow + '</i>' + '\n\n';
     let messageTitle2 = '<b>COVID-19 Cases Tracker</b>' + '\n\n';
@@ -39,39 +40,29 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
     let messageDate = '<i>Date: ' + timeNow + '</i>';
     let messageFooter = '<i>For previous log, go <a href="https://rentry.co/niakorona">here</a> (1M - 20M). #NarrativeMatters</i>';
 
-    // 1. Send daily alert (11:59pm GMT+8)
-    bot.sendMessage(channel_id, messageTitle2 + messageCases + messageDate, tg_option);
+    // check if cases passed million from yesterday
+    lineReader.eachLine('million.log', function(line, lastLine) {
+        if (lastLine) {
+            let millionLog = readLog(line);
+            let nextMillion = parseInt(millionLog['data']);
 
-    lineReader.eachLine(defaultFile, function(line, last) {
-        if (last) {
-            let casesLog = readLog(line);
+            // 1. Send daily alert (every 8 hours cron)
+            bot.sendMessage(channel_id, messageTitle2 + messageCases + messageDate, tg_option);
+            
+            if (todayCases >= nextMillion) {
+                let firstDigitStr = nextMillion.toString()[0];
+                let secondDigitStr = nextMillion.toString()[1];
+                let duration = date.getDuration(millionLog['timestamp']).replace('ago', '');
+                // 2. logging next million
+                let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
+                let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
+                
+                logToFile(logNextMillion, 'million.log');
 
-            let duration = date.getDuration(casesLog['timestamp']).replace('ago', '');
-
-            // check if cases passed million from yesterday
-            lineReader.eachLine('million.log', function(line, lastLine) {
-                if (lastLine) {
-                    let millionLog = readLog(line);
-                    let nextMillion = parseInt(millionLog['data']);
-                    
-                    if (todayCases >= nextMillion) {
-                        let firstDigitStr = nextMillion.toString()[0];
-                        let secondDigitStr = nextMillion.toString()[1];
-                        // logging next million
-                        let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
-                        let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
-                        
-                        logToFile(logNextMillion, 'million.log');
-
-                        let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
-                        // 2. Send 1 million alert
-                        bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
-                    }
-                }
-            });
-
-            // 3. do logging to file
-            logToFile(JSON.stringify(covid_stats));
+                let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
+                // 3. Send 1 million alert
+                bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
+            }
         }
     });
 });
