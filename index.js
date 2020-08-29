@@ -48,20 +48,13 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
 
             let duration = date.getDuration(casesLog['timestamp']).replace('ago', '');
 
-            let pastCasesJson = JSON.parse(casesLog['data']);
-            let yesterdayCases = parseInt(pastCasesJson['cases']);
-
+            // check if cases passed million from yesterday
             lineReader.eachLine('million.log', function(line, lastLine) {
                 if (lastLine) {
                     let millionLog = readLog(line);
-                    let millionData = parseInt(millionLog['data']);
-
-                    let firstDigitStr = millionData.toString()[0];
-                    let secondDigitStr = millionData.toString()[1];
-
-                    let nextMillion = parseInt(firstDigitStr.concat(secondDigitStr.concat('000000')));
-                    // check if passed million from yesterday
-                    if (todayCases >= nextMillion) {
+                    let nextMillion = parseInt(millionLog['data']);
+                    
+                    if (todayCases < nextMillion) {
                         let firstDigitStr = nextMillion.toString()[0];
                         let secondDigitStr = nextMillion.toString()[1];
                         // logging next million
