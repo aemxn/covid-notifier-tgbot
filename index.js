@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const lineReader = require('line-reader');
 const htmlMiner = require('./utils/html-miner');
 const { logToFile, defaultFile } = require('./utils/logger');
-const scaper = require('./utils/scraper');
+const scaper = require('./utils/request');
 const date = require('./utils/date');
 
 require('dotenv').config();
@@ -27,7 +27,6 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
 
     let covid_stats = { cases: todayCases, deaths: parsed_deaths, recovered: parsed_recovered };
 
-    let duration = '';
     let timeNow = date.getNow();
     let messageTitle = '<b>Another 1M achieved!</b>\n' + '<i>' + timeNow + '</i>' + '\n\n';
     let messageTitle2 = '<b>COVID-19 Cases Tracker</b>' + '\n\n';
@@ -56,7 +55,6 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
             
             if (todayCases >= yesterdayCases) {
                 let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
-                console.log('log 1mill');
                 // 2. Send 1 million alert
                 bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
             }
