@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const lineReader = require('line-reader');
 const htmlMiner = require('./utils/html-miner');
-const { logToFile, defaultFile } = require('./utils/logger');
+const { logToFile, logNextMillion, readLog, defaultFile } = require('./utils/logger');
 const scaper = require('./utils/request');
 const date = require('./utils/date');
 
@@ -44,20 +44,38 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
 
     lineReader.eachLine(defaultFile, function(line, last) {
         if (last) {
-            let split = line.split(' -> ');
-            let timestamp = split[0].trim();
-            let pastCases = split[1].trim();
+            let casesLog = readLog(line);
 
-            let duration = date.getDuration(timestamp).replace('ago', '');
+            let duration = date.getDuration(casesLog['timestamp']).replace('ago', '');
 
-            let pastCasesJson = JSON.parse(pastCases);
+            let pastCasesJson = JSON.parse(casesLog['data']);
             let yesterdayCases = parseInt(pastCasesJson['cases']);
-            
-            if (todayCases >= yesterdayCases) {
-                let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
-                // 2. Send 1 million alert
-                bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
-            }
+
+            lineReader.eachLine('million.log', function(line, lastLine) {
+                if (lastLine) {
+                    let millionLog = readLog(line);
+                    let millionData = parseInt(millionLog['data']);
+
+                    let firstDigitStr = millionData.toString()[0];
+                    let secondDigitStr = millionData.toString()[1];
+
+                    let nextMillion = parseInt(firstDigitStr.concat(secondDigitStr.concat('000000')));
+                    // check if passed million from yesterday
+                    if (todayCases >= nextMillion) {
+                        let firstDigitStr = nextMillion.toString()[0];
+                        let secondDigitStr = nextMillion.toString()[1];
+                        // logging next million
+                        let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
+                        let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
+                        
+                        logToFile(logNextMillion, 'million.log');
+
+                        let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
+                        // 2. Send 1 million alert
+                        bot.sendMessage(channel_id, messageTitle + messageCases + messageDuration + messageFooter, tg_option);
+                    }
+                }
+            });
 
             // 3. do logging to file
             logToFile(JSON.stringify(covid_stats));

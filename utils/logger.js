@@ -44,5 +44,29 @@ function logToFile(text, file) {
   });
 }
 
+function logNextMillion(text, file) {
+  // Define file name.
+  const filename = file !== undefined ? file : defaultFile;
+
+  // Define log text.
+  const logText = getDateAsText() + ' -> ' + text + '\r\n';
+
+  // Save log to file.
+  fs.appendFile(filename, logText, 'utf8', function (error) {
+    if (error) {
+      // If error - show in console.
+      console.log(getDateAsText() + ' -> ' + error);
+    }
+  });
+}
+
+function readLog(text) {
+  let split = text.split(' -> ');
+  let timestamp = split[0].trim();
+  let data = split[1].trim();
+
+  return { timestamp, data };
+}
+
 // Export.
-module.exports = { logToFile, defaultFile };
+module.exports = { logToFile, logNextMillion, readLog, defaultFile };
