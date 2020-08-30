@@ -75,32 +75,34 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
             if (todayCases >= nextMillion) {
                 let firstDigitStr = nextMillion.toString()[0];
                 let secondDigitStr = nextMillion.toString()[1];
-                let duration = date.getDuration(millionLog['timestamp']).replace('ago', '');
-                // 2. logging next million
-                let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
-                let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
+                let duration = date.getDuration(millionLog['timestamp']).replace('ago', '').trim();
+
+                let previousDate = date.formatDate(millionLog['timestamp'], false);
+                let nowDate = date.formatDate(date.getNow(), false);
 
                 let logCases = JSON.stringify({ cases: parsed_cases, deaths: parsed_deaths, recovered: parsed_recovered });
 
-                logToFile(logNextMillion, logPath);
-                logToFile(logCases); // log current cases
-
-                let messageDuration = '<b>⌛️ Duration:</b> <code>' + duration + '</code>';
-                // 3. Send 1 million alert
+                let messageToNow = previousDate + ' - ' + nowDate;
+                let messageDuration = '<b>⌛️ Duration:</b> <code>' + messageToNow + ' (' + duration + ')</code>';
+                // 2. Send 1 million alert
                 let millionAlert =
                 messageTitle + 
                 _n + _n +
                 messageCases + 
                 _n + _n + 
                 messageDuration + 
-                _n +
-                messageDate +
                 _n + _n +
                 messagePrevLog + 
                 _n + _n + 
                 messageFooter;
 
                 bot.sendMessage(channel_id, millionAlert, tg_option);
+
+                // 3. logging next million
+                let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
+                let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
+                logToFile(logNextMillion, logPath); // log million
+                logToFile(logCases); // log current cases
             }
         }
     }, function (err) {
