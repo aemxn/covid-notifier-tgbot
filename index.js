@@ -72,7 +72,7 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
             // 1. Send daily alert (every 8 hours cron)
             bot.sendMessage(channel_id, dailyAlert, tg_option);
 
-            if (todayCases < nextMillion) {
+            if (todayCases >= nextMillion) {
                 let firstDigitStr = nextMillion.toString()[0];
                 let secondDigitStr = nextMillion.toString()[1];
                 let duration = date.getDuration(millionLog['timestamp']).replace('ago', '');
