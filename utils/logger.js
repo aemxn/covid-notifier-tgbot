@@ -3,6 +3,7 @@ const fs = require('fs');
 const date = require('./date')
 
 const defaultFile = 'default.log';
+const millionFile = 'million.log';
 
 /**
  * Append zero to length.
@@ -69,4 +70,4 @@ function readLog(text) {
 }
 
 // Export.
-module.exports = { logToFile, logNextMillion, readLog, defaultFile };
+module.exports = { logToFile, readLog, millionFile };

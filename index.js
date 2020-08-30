@@ -1,20 +1,25 @@
 const TelegramBot = require('node-telegram-bot-api');
 const lineReader = require('line-reader');
 const htmlMiner = require('./utils/html-miner');
-const { logToFile, logNextMillion, readLog, defaultFile } = require('./utils/logger');
+const { logToFile, readLog, millionFile } = require('./utils/logger');
 const scaper = require('./utils/request');
 const date = require('./utils/date');
 
-if (process.platform === "win32")
+// path settings
+let logPath = '';
+if (process.platform === "win32") {
     require('dotenv').config();
-else
-    require('dotenv').config({ path: '/var/www/html/covid-notifier-tgbot/.env' });
+    logPath = millionFile;
+} else {
+    let dirPath = '/var/www/html/covid-notifier-tgbot';
+    require('dotenv').config({ path: `${dirPath}/.env` });
+    logPath = `${dirPath}/${millionFile}`;
+}
 
-let logPath = '/var/www/html/covid-notifier-tgbot/million.log';
+// tg settings
 const token = process.env.BOT_TOKEN;
 const channel_id = process.env.CHANNEL_ID;
 const bot = new TelegramBot(token, { polling: false });
-
 const tg_option = {
     parse_mode: 'HTML'
 };
@@ -58,7 +63,10 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
                 let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
                 let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
 
+                let logCases = JSON.stringify({ cases: todayCases, deaths: parsed_deaths, recovered: parsed_recovered });
+
                 logToFile(logNextMillion, logPath);
+                logToFile(logCases); // log current cases
 
                 let messageDuration = '<b>Duration:</b> <pre>' + duration + '</pre>\n\n';
                 // 3. Send 1 million alert
