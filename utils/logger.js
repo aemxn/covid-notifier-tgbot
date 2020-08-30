@@ -6,16 +6,6 @@ const defaultFile = 'default.log';
 const millionFile = 'million.log';
 
 /**
- * Append zero to length.
- * @param {string} value Value to append zero.
- * @param {number} length Needed length.
- * @returns {string} String with appended zeros id need it.
- */
-function appendZeroToLength(value, length) {
-  return `${value}`.padStart(length, 0);
-}
-
-/**
  * Get date as text.
  * @returns {string} Date as text. Sample: "2018.12.03, 07:32:13.0162 UTC".
  */
@@ -30,22 +20,6 @@ function getDateAsText() {
  * @param {string} [file] Log file path.
  */
 function logToFile(text, file) {
-  // Define file name.
-  const filename = file !== undefined ? file : defaultFile;
-
-  // Define log text.
-  const logText = getDateAsText() + ' -> ' + text + '\r\n';
-
-  // Save log to file.
-  fs.appendFile(filename, logText, 'utf8', function (error) {
-    if (error) {
-      // If error - show in console.
-      console.log(getDateAsText() + ' -> ' + error);
-    }
-  });
-}
-
-function logNextMillion(text, file) {
   // Define file name.
   const filename = file !== undefined ? file : defaultFile;
 
