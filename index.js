@@ -1,19 +1,22 @@
 const TelegramBot = require('node-telegram-bot-api');
 const lineReader = require('line-reader');
 const htmlMiner = require('./utils/html-miner');
-const { logToFile, readLog, millionFile } = require('./utils/logger');
+const { logToFile, readLog, millionFile, defaultFile } = require('./utils/logger');
 const scaper = require('./utils/request');
 const date = require('./utils/date');
 
 // path settings
 let logPath = '';
+let logPathDefault = '';
 if (process.platform === "win32") {
     require('dotenv').config();
     logPath = millionFile;
+    lotDefault = defaultFile;
 } else {
     let dirPath = '/var/www/html/covid-notifier-tgbot';
     require('dotenv').config({ path: `${dirPath}/.env` });
     logPath = `${dirPath}/${millionFile}`;
+    logPathDefault = `${dirPath}/${defaultFile}`;
 }
 
 // tg settings
@@ -101,8 +104,8 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
                 // 3. logging next million
                 let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
                 let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
-                logToFile(logNextMillion, logPath); // log million
-                logToFile(logCases); // log current cases
+                logToFile(logNextMillion, logPath); // log million (million.log)
+                logToFile(logCases, logPathDefault); // log current cases (default.log)
             }
         }
     }, function (err) {

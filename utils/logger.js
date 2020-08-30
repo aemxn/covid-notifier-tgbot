@@ -44,4 +44,4 @@ function readLog(text) {
 }
 
 // Export.
-module.exports = { logToFile, readLog, millionFile };
+module.exports = { logToFile, readLog, millionFile, defaultFile };
