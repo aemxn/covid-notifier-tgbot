@@ -100,11 +100,11 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
                 _n + _n + 
                 messageFooter;
 
-                bot.sendMessage(channel_id, millionAlert, tg_option);
+                // bot.sendMessage(channel_id, millionAlert, tg_option);
 
                 // 3. logging next million
                 let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
-                let logNextMillion = parseInt(sumFirstSecond.toString().concat('000000')); // 26+000000
+                let logNextMillion = parseInt(sumFirstSecond.toString().concat('0000000')); // 26+000000
                 logToFile(logNextMillion, logPath); // log million (million.log)
                 logToFile(logCases, logPathDefault); // log current cases (default.log)
             }
