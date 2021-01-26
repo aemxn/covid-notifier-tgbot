@@ -100,7 +100,7 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
                 _n + _n + 
                 messageFooter;
 
-                // bot.sendMessage(channel_id, millionAlert, tg_option);
+                bot.sendMessage(channel_id, millionAlert, tg_option);
 
                 // 3. logging next million
                 let sumFirstSecond = parseInt(firstDigitStr + secondDigitStr) + 1; // 25+1
