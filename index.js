@@ -54,7 +54,7 @@ scaper.simpleRequest('https://www.worldometers.info/coronavirus/', 'GET', (html)
     '😊 <b>Recovered:</b> <code>' + recovered + '</code>';
 
     let messageDate = '📅 <b>Date:</b> <code>' + timeNow + '</code>';
-    let messagePrevLog = '<i>For previous log, go <a href="https://rentry.co/niakorona">here</a> (1M - 20M). #NarrativeMatters #1M</i>';
+    let messagePrevLog = '<i>For previous log, go <a href="https://rentry.co/niakorona">here</a>.</i>';
     let messageFooter = '🔗 @niakorona';
 
     let dailyAlert = 
